@@ -42,10 +42,25 @@ replace_na_with_INT <- function(vec) {
 #'
 #' @return Nothing.
 #' @export
-#'
-#' @examples
 write_tsv_and_excel <- function(x, path, ...) {
   write_tsv(x=x, file=paste0(path,".tsv"))
   writexl::write_xlsx(x = x, path = paste0(path,".xlsx"))
-  
 }
+
+
+# Helper --------------------------------------------------------------------
+
+#'  Switch names and values for named vector
+#'
+#' @param named_vector The named vector to switch names and values for
+#'
+#' @return Named vector with switched names and values
+#' @export
+
+switch_names_and_values_for_vec <- function(named_vector) {
+  map(levels, ~{
+    my_names <- names(.x)
+    values <- unname(.x)
+    
+    return(set_names(my_names, values))}
+  )}

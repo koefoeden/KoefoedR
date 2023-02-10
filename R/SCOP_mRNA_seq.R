@@ -438,6 +438,7 @@ get_DE_datatable_updated <- function(df, ...) {
 #' @export
 #'
 #' @examples
+#' 
 #' get_GO_datatable()
 get_GO_datatable_updated <- function(df, ...) {
   df %>%
