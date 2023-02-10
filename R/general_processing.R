@@ -58,9 +58,8 @@ write_tsv_and_excel <- function(x, path, ...) {
 #' @export
 
 switch_names_and_values_for_vec <- function(named_vector) {
-  map(levels, ~{
-    my_names <- names(.x)
-    values <- unname(.x)
-    
-    return(set_names(my_names, values))}
-  )}
+  my_names <- names(named_vector)
+  values <- unname(named_vector)
+  
+  return(set_names(my_names, values))
+}
