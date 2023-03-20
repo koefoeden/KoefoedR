@@ -254,6 +254,29 @@ get_intersect_members <- function (x, ...){
   return(x)
 }
 
+#' Small re-write of the UpsetR::fromList function.
+#'
+#' @param input
+#'
+#' @return
+#' @export
+#'
+fromList <- function (input) {
+  # Same as original fromList()...
+  elements <- unique(unlist(input))
+  data <- unlist(lapply(input, function(x) {
+    x <- as.vector(match(elements, x))
+  }))
+  data[is.na(data)] <- as.integer(0)
+  data[data != 0] <- as.integer(1)
+  data <- data.frame(matrix(data, ncol = length(input), byrow = F))
+  data <- data[which(rowSums(data) != 0), ]
+  names(data) <- names(input)
+  # ... Except now it conserves your original value names!
+  row.names(data) <- elements
+  return(data)
+}
+
 #' Get intersection values from a named list, corresponding to the Upset-plot
 #'
 #' @param listInput Named list which can also be used in Upset fromList() function

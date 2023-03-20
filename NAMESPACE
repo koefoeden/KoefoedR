@@ -3,6 +3,7 @@
 export(catHeader)
 export(catHeader_w_tabset)
 export(extract_specific_intersection)
+export(fromList)
 export(generate_gene_info_list)
 export(get_DE_datatable_updated)
 export(get_GO_datatable_updated)
