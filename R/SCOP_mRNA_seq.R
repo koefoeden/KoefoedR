@@ -19,8 +19,8 @@ NULL
 #'
 #' @return The gene info list
 #' @export
-generate_gene_info_list <- function(dataset="hsapiens_gene_ensembl", gene_counts_raw) {
-  
+generate_gene_info_list <- function(dataset="hsapiens_gene_ensembl", gene_counts_raw_path) {
+  gene_counts_raw <- readRDS(gene_counts_raw_path)
   gene_info_list <- biomaRt::getBM(filters = "ensembl_gene_id",
                                    attributes = c("ensembl_gene_id","external_gene_name", "description"),
                                    values = rownames(gene_counts_raw),
@@ -40,8 +40,8 @@ generate_gene_info_list <- function(dataset="hsapiens_gene_ensembl", gene_counts
 #'
 #' @return A named vector that can be used for translation
 #' @export
-get_translate_vec <- function(dataset="hsapiens_gene_ensembl", gene_counts_raw) {
-  gene_info_list <- generate_gene_info_list(dataset, gene_counts_raw)
+get_translate_vec <- function(dataset="hsapiens_gene_ensembl", gene_counts_raw_path) {
+  gene_info_list <- generate_gene_info_list(dataset, gene_counts_raw_path)
   
   symbol_translate_vec <- gene_info_list %>% 
     select(ENSEMBL_ID, Name) %>% deframe()
