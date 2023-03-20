@@ -31,12 +31,30 @@ generate_gene_info_list <- function(dataset="hsapiens_gene_ensembl", gene_counts
     saveRDS(file = "data/gene-info-list_human.RDS")
 }
 
+
+#' Get a named vector that can be used to translate ENSEMBL-ids into gene synmbols
+#'
+#' @param dataset The biomart dataset 
+#' @param gene_counts_raw the gne counts raw object to extract ENSEMBL_IDS from
+#'
+#' @return A named vector that can be used for translation
+#' @export
+get_translate_vec <- function(dataset="hsapiens_gene_ensembl", gene_counts_raw) {
+  gene_info_list <- generate_gene_info_list(dataset, gene_counts_raw)
+  
+  symbol_translate_vec <- gene_info_list %>% 
+    select(ENSEMBL_ID, Name) %>% deframe()
+  
+  return(symbol_translate_vec)
+}
+
 #' Get MD data for all samples in long tibble
 #'
 #' @param object The DGElist object with transcript/gene counts and sample information
 #' encoded in the y$sample object
 #' @return A long tibble with three columns: sample label, mean and diff values
 #' @export
+
 
 get_MD_data_for_all_samples_updated <- function(object) {
   sample_indices_w_names <- colnames(object) %>%
@@ -260,7 +278,6 @@ get_intersect_members <- function (x, ...){
 #'
 #' @return
 #' @export
-#'
 fromList <- function (input) {
   # Same as original fromList()...
   elements <- unique(unlist(input))
