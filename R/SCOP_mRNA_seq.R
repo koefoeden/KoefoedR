@@ -120,7 +120,7 @@ get_sig_entities_between_conds_across_tissues <- function(type, tissue_str, cond
     paste(collapse = "|")
   
   # get final tissue pattern
-  tissue_pattern_final <- str_glue("analysis.*[{tissue_pattern}].*_data")
+  tissue_pattern_final <- str_glue(".*analysis.*[{tissue_pattern}].*_results")
   
   contrasts_pattern <- cond_str %>%
     str_split(pattern=",") %>%
@@ -183,6 +183,7 @@ get_sig_entities_between_conds_across_tissues <- function(type, tissue_str, cond
 #' @param type Either "DE" or "GO" depending on the type of entity
 #' @param cond_str Character vector: Comma-separated list of contrasts as present in the data directory, i.e. Group2,Group3
 #' @param tissue_str Character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp,NAc
+#' @param genes_type Either ENSEMBL or NCBI
 #' @return A nested list, where the upper levels corresponds to supplied tissues,
 #' and the lower levels each contain a vector of significant gene names or GO-terms for the given condition
 #' @export
