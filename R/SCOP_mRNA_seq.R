@@ -219,6 +219,94 @@ get_sig_entities_between_tissues_across_conds <- function(type, cond_str, tissue
   return(tables_per_condition_list)
 }
 
+#' Function to get the intersection values correpsodning to a UpsetR-plot
+#'
+#' @param The binary membership df, can be geneated from named list via fromList()
+#' @param ... The unique combination of intersections to get the result for
+#'
+#' @return
+#' @export
+get_intersect_members <- function (x, ...){
+  require(dplyr)
+  require(tibble)
+  x <- x[,sapply(x, is.numeric)][,0<=colMeans(x[,sapply(x, is.numeric)],na.rm=T) & colMeans(x[,sapply(x, is.numeric)],na.rm=T)<=1]
+  n <- names(x)
+  x %>% rownames_to_column() -> x
+  l <- c(...)
+  a <- intersect(names(x), l)
+  ar <- vector('list',length(n)+1)
+  ar[[1]] <- x
+  i=2
+  for (item in n) {
+    if (item %in% a){
+      if (class(x[[item]])=='integer'){
+        ar[[i]] <- paste(item, '>= 1')
+        i <- i + 1
+      }
+    } else {
+      if (class(x[[item]])=='integer'){
+        ar[[i]] <- paste(item, '== 0')
+        i <- i + 1
+      }
+    }
+  }
+  do.call(filter_, ar) %>% column_to_rownames() -> x
+  return(x)
+}
+
+#' Get intersection values from a named list, corresponding to the Upset-plot
+#'
+#' @param listInput Named list which can also be used in Upset fromList() function
+#' @param sort whether to sort the output,
+#'
+#' @return Returns the labels of the intersecting values
+#' @export
+overlapGroups <- function (listInput, sort = TRUE) {
+  
+  listInputmat    <- fromList(listInput) == 1
+  listInputunique <- unique(listInputmat)
+  grouplist <- list()
+  # going through all unique combinations and collect elements for each in a list
+  for (i in 1:nrow(listInputunique)) {
+    currentRow <- listInputunique[i,]
+    myelements <- which(apply(listInputmat,1,function(x) all(x == currentRow)))
+    attr(myelements, "groups") <- currentRow
+    grouplist[[paste(colnames(listInputunique)[currentRow], collapse = ":")]] <- myelements
+  }
+  if (sort) {
+    grouplist <- grouplist[order(sapply(grouplist, function(x) length(x)), decreasing = TRUE)]
+  }
+  attr(grouplist, "elements") <- unique(unlist(listInput))
+  # return(map(grouplist, names))
+  return(grouplist)
+  # save element list to facilitate access using an index in case rownames are not named
+}
+
+#' Get specific intersection
+#'
+#' @param named_list A named list of entities
+#' @param extract_vector A list of extrcation vectors, i.e. a list of named boolean vectors,
+#' where the names correspond to the given set, and the boolean whether it should be in that set or not
+#' @return
+#' @export
+extract_specific_intersection <- function(named_list, extract_vectors) {
+  
+  overlapping_groups <- overlapGroups(named_list)
+  
+  across_vecs <- map(extract_vectors,
+                     function(bool_vector) {
+                       idx <- map(overlapping_groups,
+                                  ~identical(attr(.x, which = "groups"), bool_vector)) %>%
+                         unlist() %>%
+                         which()
+                       
+                       return(overlapping_groups[[idx]] %>% names())
+                     }
+  )
+  
+  return(across_vecs)
+}
+
 
 
 # Plots -------------------------------------------------------------------
