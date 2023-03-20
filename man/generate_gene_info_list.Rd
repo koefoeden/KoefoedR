@@ -12,7 +12,7 @@ generate_gene_info_list(dataset = "hsapiens_gene_ensembl", gene_counts_raw)
 \item{gene_counts_raw}{Raw salmon output with ensemble IDS as rownames.}
 }
 \value{
-nothing
+The gene info list
 }
 \description{
 Generate external gene names for ENSEMBL-IDS.

@@ -17,18 +17,19 @@ NULL
 #' @param dataset Choose human or mouse biomart ensembl dataset 
 #' @param gene_counts_raw Raw salmon output with ensemble IDS as rownames.
 #'
-#' @return nothing
+#' @return The gene info list
 #' @export
 generate_gene_info_list <- function(dataset="hsapiens_gene_ensembl", gene_counts_raw) {
   
   gene_info_list <- biomaRt::getBM(filters = "ensembl_gene_id",
                                    attributes = c("ensembl_gene_id","external_gene_name", "description"),
-                                   values = rownames(g_counts_raw),
+                                   values = rownames(gene_counts_raw),
                                    mart = biomaRt::useDataset(dataset, biomaRt::useMart("ensembl"))) %>%
     dplyr::rename("Name"=external_gene_name,
                   "ENSEMBL_ID"=ensembl_gene_id) %>%
-    select(ENSEMBL_ID, Name, description) %>%
-    saveRDS(file = "data/gene-info-list_human.RDS")
+    select(ENSEMBL_ID, Name, description)
+  
+  return(gene_info_list)
 }
 
 
