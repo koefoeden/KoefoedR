@@ -10,7 +10,24 @@
 #' @import forcats
 NULL
 
+
 # Data processing -------------------------------------------------------------------
+#' Generate external gene names for ENSEMBL-IDS.
+#'
+#' @param dataset Choose human or mouse biomart ensembl dataset 
+#' @param gene_counts_raw Raw salmon output with ensemble IDS as rownames.
+#'
+#' @return The gene info list
+#' @export
+generate_gene_info_list <- function(dataset="hsapiens_gene_ensembl", gene_counts_raw) {
+  
+  gene_info_list <- biomaRt::getBM(filters = "ensembl_gene_id",
+                                   attributes = c("ensembl_gene_id","external_gene_name", "description"),
+                                   values = rownames(g_counts_raw),
+                                   mart = biomaRt::useDataset(dataset, biomaRt::useMart("ensembl"))) %>%
+    dplyr::rename(Name="external_gene_name")
+  return(gene_info_list)
+}
 
 #' Get MD data for all samples in long tibble
 #'
