@@ -495,7 +495,7 @@ ggplot_volcano_updated <- function(df,
 #' @param color_by The vector to colour the plots by
 #' @return Returns a list of ggplots coloured according to color_by
 #' @export
-ggplot_mds_repel_updated <- function (y, dims, color_by) {
+ggplot_mds_repel <- function (y, dims, color_by) {
   
   plotMDS_obj <- edgeR::plotMDS.DGEList(y, dim.plot = dims,
                                         plot = FALSE)
@@ -512,14 +512,15 @@ ggplot_mds_repel_updated <- function (y, dims, color_by) {
                ~x_y_data %>%
                  ggplot(aes_string(x = colnames(x_y_data)[1],
                                    y = colnames(x_y_data)[2],
+                                   colour = .x,
                                    text="Sample.ID",
-                                   colour = .x)) +
+                                   label="User_ID")) +
                  ggplot2::geom_point() +
                  xlab(str_glue("{axis_labels}. {dims[1]} ({var_explained_per_dim[1]} % var. explained)")) +
                  ylab(str_glue("{axis_labels}. {dims[2]} ({var_explained_per_dim[2]} % var. explained)")) +
                  ggtitle(str_glue("MDS-plot colored by {.x}. Dimensions: {dims[1]} & {dims[2]}")))
   
-  interactive_plots <- map(plots, ~ggplotly(.x, tooltip = c("text", "colour","x","y")))
+  interactive_plots <- map(plots, ~ggplotly(.x, tooltip = c("text", "label", "colour","x","y")))
   
   return(interactive_plots)
 }
