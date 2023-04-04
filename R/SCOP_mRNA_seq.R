@@ -481,7 +481,7 @@ ggplot_volcano_updated <- function(df,
     ggtitle(title)
   
   if(interactive_plot) {
-    plot <- ggplotly(plot, tooltip = c("text", "x", "y", "colour", "label"))
+    plot <- plotly::ggplotly(plot, tooltip = c("text", "x", "y", "colour", "label"))
   }
   
   return(plot)
@@ -520,7 +520,7 @@ ggplot_mds_repel <- function (y, dims, color_by) {
                  ylab(str_glue("{axis_labels}. {dims[2]} ({var_explained_per_dim[2]} % var. explained)")) +
                  ggtitle(str_glue("MDS-plot colored by {.x}. Dimensions: {dims[1]} & {dims[2]}")))
   
-  interactive_plots <- map(plots, ~ggplotly(.x, tooltip = c("text", "label", "colour","x","y")))
+  interactive_plots <- map(plots, ~plotly::ggplotly(.x, tooltip = c("text", "label", "colour","x","y")))
   
   return(interactive_plots)
 }
