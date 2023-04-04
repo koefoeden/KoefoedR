@@ -4,7 +4,10 @@
 \alias{generate_gene_info_list}
 \title{Generate external gene names for ENSEMBL-IDS.}
 \usage{
-generate_gene_info_list(dataset = "hsapiens_gene_ensembl", gene_counts_raw)
+generate_gene_info_list(
+  dataset = "hsapiens_gene_ensembl",
+  gene_counts_raw_path
+)
 }
 \arguments{
 \item{dataset}{Choose human or mouse biomart ensembl dataset}

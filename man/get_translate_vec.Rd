@@ -4,7 +4,7 @@
 \alias{get_translate_vec}
 \title{Get a named vector that can be used to translate ENSEMBL-ids into gene synmbols}
 \usage{
-get_translate_vec(dataset = "hsapiens_gene_ensembl", gene_counts_raw)
+get_translate_vec(dataset = "hsapiens_gene_ensembl", gene_counts_raw_path)
 }
 \arguments{
 \item{dataset}{The biomart dataset}
