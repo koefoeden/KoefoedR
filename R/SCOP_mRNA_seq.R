@@ -95,6 +95,7 @@ n_sig_genes_pr_contrast <- function(results_DF_list) {
 #' @return character vector: gene names or ensembl IDs with FDR<0.5
 #' @export
 get_sig_entities_from_df <- function(df, genes_type="NCBI", type="DE") {
+  message("This function is deprecated. Please use the with_direction instead.")
   
   sig_entities <- df %>%
     filter(FDR<0.05) %>%
@@ -104,6 +105,29 @@ get_sig_entities_from_df <- function(df, genes_type="NCBI", type="DE") {
     pull()
   return(sig_entities)
 }
+
+#' Get number of significant DEGs or GO-terms from dataframe
+#' @param df Data frame as produced by get_GO/DE_datatable
+#' @param genes_type character vector, NCBI or ENSEMBL
+#' @param type DE or GO
+#'
+#' @return character vector: gene names or ensembl IDs with FDR<0.5
+#' @export
+get_sig_entities_from_df_w_direction <- function (df, genes_type = "NCBI", type = "DE") {
+  sig_entities <- df %>% 
+    filter(FDR < 0.05) %>% 
+    {if (type!="GO") {
+      mutate(., Direction=case_when(logFC<0 ~ "Down",
+                                    logFC>0 ~ "Up"),
+             Combined=paste(ENSEMBL_ID, Direction,sep = "_" ))} 
+      else {
+        mutate(.,Combined=paste(TERM, Direction,sep = "_" ))} 
+    } %>% 
+    pull(Combined)
+  
+  return(sig_entities)
+}
+
 
 #' Get number of significant DEGs or GO-terms from tsv file as produced by get_DE_datatable
 #' @param path character vector: Path to the .tsv file
@@ -115,7 +139,7 @@ get_sig_entities_from_path <- function(path, type, genes_type) {
   
   sig_entities <- path %>%
     read_tsv %>%
-    get_sig_entities_from_df(type=type, genes_type = genes_type)
+    get_sig_entities_from_df_w_direction(type=type, genes_type = genes_type)
   return(sig_entities)
   
 }
