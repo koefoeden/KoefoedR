@@ -144,70 +144,54 @@ get_sig_entities_from_path <- function(path, type, genes_type) {
   
 }
 
-#' Gets a nested list of significant entities (genes or GO-terms) between contrasts across tissues.
+#' Gets a nested list of significant entities (genes or GO-terms) between coefficients across tissues.
 #' Assumes there is a data dir with each tissue described in its name, with GO and DE-tables in them
 #' with corresponding names.
 #' @param type Either "DE" or "GO" depending on the type of entity
-#' @param tissue_str Character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp,NAc
-#' @return A nested list, where the upper levels corresponds to supplied  contrasts,
+#' @param tissues Character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp,NAc
+#' @return A nested list, where the upper levels corresponds to supplied  coefficients,
 #' and the lower levels each contain a vector of significant gene names or GO-terms for the tissue
 #' @export
-get_sig_entities_between_conds_across_tissues <- function(type, tissue_str, cond_str, genes_type) {
-  # Get tissues in vector
-  tissues <- tissue_str %>%
-    str_split(pattern=",") %>%
-    unlist()
+get_sig_entities_between_coefficients_across_tissues <- function(data_dir, type, tissues, coefficients, genes_type, verbose=FALSE) {
   
-  # Get intermediat tissue pattern
-  tissue_pattern <- tissues %>%
+  # Get regex tissue pattern
+  tissue_pattern_inter <- 
+    tissues %>%
     paste(collapse = "|")
   
-  # get final tissue pattern
-  tissue_pattern_final <- str_glue(".*analysis.*[{tissue_pattern}].*_results")
+  tissue_pattern <- str_glue(".*analysis.*[{tissue_pattern_inter}].*_results")
+  if (verbose) print(str_glue("Looking for data directories using {tissue_pattern}"))
   
-  contrasts_pattern <- cond_str %>%
-    str_split(pattern=",") %>%
-    unlist() %>%
-    paste(collapse = "|")
-  print("Conditions pattern")
-  print(contrasts_pattern)
-  
-  
-  list_files_contrasts_pattern <- str_glue("{type}_({contrasts_pattern}).tsv") %>% as.character()
-  
-  extract_pattern <- str_glue("{type}_({contrasts_pattern}).tsv") %>% as.character()
-  
-  data_dirs <- list.files(pattern=tissue_pattern_final) %>%
+  # get tisseu dirs
+  tissue_dirs <- list.files(path = data_dir, 
+                            pattern=tissue_pattern) %>%
     set_names(tissues)
   
   
-  print(data_dirs)
-  tables_per_tissue_list <- map(data_dirs,
+  # get coefficient/contrast list files and extract patterns
+  coefficients_pattern <- coefficients %>%
+    paste(collapse = "|")
+  
+  list_files_coefficients_pattern <- str_glue("{type}_({coefficients_pattern}).tsv") %>% as.character()
+  extract_pattern <- str_glue("{type}_({coefficients_pattern}).tsv") %>% as.character()
+  
+  
+  # loop through each tissue directory
+  tables_per_tissue_list <- map(tissue_dirs,
                                 
                                 ~{
-                                  print("list_files_contrasts_pattern:")
-                                  print(list_files_contrasts_pattern)
-                                  
+                                  if (verbose) print(str_glue("Looking for files: {coefficients_pattern} in {.x}"))
                                   result_files <- list.files(path = .x,
-                                                             pattern=list_files_contrasts_pattern,
+                                                             pattern=list_files_coefficients_pattern,
                                                              full.names = T,)
                                   
                                   unformatted_names <-list.files(path = .x,
-                                                                 pattern=list_files_contrasts_pattern,
+                                                                 pattern=list_files_coefficients_pattern,
                                                                  full.names = F)
-                                  
-                                  print("Unformatted names:")
-                                  print(unformatted_names)
-                                  
-                                  print("Extract pattern:")
-                                  print(extract_pattern)
                                   
                                   formatted_names<- map(unformatted_names,
                                                         ~str_match(string = .x,
                                                                    pattern =extract_pattern )[[2]])
-                                  
-                                  print("Contrasts:")
-                                  print(contrasts)
                                   
                                   
                                   tables <- map(.x = result_files,
@@ -220,37 +204,34 @@ get_sig_entities_between_conds_across_tissues <- function(type, tissue_str, cond
   )
   return(tables_per_tissue_list)
 }
-#' Gets a nested list of significant entities (genes or GO-terms) between tissues across contrasts.
+#' Gets a nested list of significant entities (genes or GO-terms) between tissues across coefficients.
 #' Assumes there is a data dir with each tissue described in its name, with GO and DE-tables in them
 #' with corresponding names.
 #' @param type Either "DE" or "GO" depending on the type of entity
-#' @param cond_str Character vector: Comma-separated list of contrasts as present in the data directory, i.e. Group2,Group3
-#' @param tissue_str Character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp,NAc
+#' @param coefficients Character vector: Comma-separated list of coefficients as present in the data directory, i.e. Group2,Group3
+#' @param tissues Character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp,NAc
 #' @param genes_type Either ENSEMBL or NCBI
 #' @return A nested list, where the upper levels corresponds to supplied tissues,
 #' and the lower levels each contain a vector of significant gene names or GO-terms for the given condition
 #' @export
-get_sig_entities_between_tissues_across_conds <- function(type, cond_str, tissue_str, genes_type) {
+get_sig_entities_between_tissues_across_coefficients <- function(data_dir, type, coefficients, tissues, genes_type) {
   
-  
-  contrasts <- cond_str %>%
-    str_split(pattern=",") %>%
-    unlist()
-  
-  tissue_pattern <- tissue_str %>%
-    str_split(pattern=",") %>%
-    unlist() %>%
+  tissue_pattern <- tissues %>%
     paste(collapse = "|")
   
   
-  condition_pattern <-  str_glue("{type}_{contrasts}.tsv") %>%
+  condition_pattern <-  str_glue("{type}_{coefficients}.tsv") %>%
     as.vector() %>%
-    set_names(contrasts)
+    set_names(coefficients)
   
-  all_result_files <- map(condition_pattern, ~list.files(pattern=.x, recursive = T))
+  all_result_files <- map(condition_pattern, 
+                          ~list.files(path =data_dir,
+                                      pattern=.x, 
+                                      recursive = T))
   
   tables_per_condition_list <- map(all_result_files,
-                                   ~{tables <- map(.x, ~get_sig_entities_from_path(path = .x, type = type, genes_type = genes_type))
+                                   ~{tables <- map(.x, 
+                                                   ~get_sig_entities_from_path(path = .x, type = type, genes_type = genes_type))
                                    
                                    tissue_names <- map(.x,
                                                        ~str_match(.x,
@@ -376,27 +357,27 @@ extract_specific_intersection <- function(named_list, extract_vectors) {
 
 # Plots -------------------------------------------------------------------
 
-#' Draws a Venn diagram of significant entities (genes or GO-terms) between tissues across contrasts,
-#' or between contrasts across tissues
+#' Draws a Venn diagram of significant entities (genes or GO-terms) between tissues across coefficients,
+#' or between coefficients across tissues
 #'
-#' @param between_contrasts boolean: Whether to plot overlaps between contrasts (TRUE) or between tissues (FALSE)
+#' @param between_coefficients boolean: Whether to plot overlaps between coefficients (TRUE) or between tissues (FALSE)
 #' @param type character vector: Either "DE" or "GO" depending on the type of entity
-#' @param cond_str character vector: Comma-separated list of contrasts as present in the data directory, i.e. Group2,Group3
-#' @param tissue_str character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp, NAc
+#' @param coefficients character vector: Comma-separated list of coefficients as present in the data directory, i.e. Group2,Group3
+#' @param tissues character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp, NAc
 #'
 #' @return A Venn Diagram of the ggplot-kind.
 #' @export
-make_venn <- function(between_contrasts, type, tissue_str, cond_str, genes_type, data_dir) {
+make_venn <- function(between_coefficients, type, tissues, coefficients, genes_type, data_dir) {
   
   entity_type <- case_when(type=="DE"~"genes",
                            type=="GO"~ "GO-terms")
   
-  if (between_contrasts) {
-    tables_pr_tissue_or_cond_list <- get_sig_entities_between_conds_across_tissues(type = type , tissue_str = tissue_str, cond_str = cond_str, genes_type = genes_type)
-    title <- "Significant {entity_type} (FDR<0.05) between contrasts in {.y}"
+  if (between_coefficients) {
+    tables_pr_tissue_or_cond_list <- get_sig_entities_between_coefficients_across_tissues(data_dir, type = type , tissues = tissues, coefficients = coefficients, genes_type = genes_type)
+    title <- "Significant {entity_type} (FDR<0.05) between coefficients in {.y}"
   }
   else {
-    tables_pr_tissue_or_cond_list <-  get_sig_entities_between_tissues_across_conds(type = type, tissue_str=tissue_str, cond_str=cond_str, genes_type=genes_type)
+    tables_pr_tissue_or_cond_list <-  get_sig_entities_between_tissues_across_coefficients(data_dir, type = type, tissues=tissues, coefficients=coefficients, genes_type=genes_type)
     title <- "Significant {entity_type} (FDR<0.05) between tissues in {.y}"
   }
   print(tables_pr_tissue_or_cond_list)

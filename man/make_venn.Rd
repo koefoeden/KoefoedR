@@ -2,24 +2,31 @@
 % Please edit documentation in R/SCOP_mRNA_seq.R
 \name{make_venn}
 \alias{make_venn}
-\title{Draws a Venn diagram of significant entities (genes or GO-terms) between tissues across contrasts,
-or between contrasts across tissues}
+\title{Draws a Venn diagram of significant entities (genes or GO-terms) between tissues across coefficients,
+or between coefficients across tissues}
 \usage{
-make_venn(between_contrasts, type, tissue_str, cond_str, genes_type, data_dir)
+make_venn(
+  between_coefficients,
+  type,
+  tissues,
+  coefficients,
+  genes_type,
+  data_dir
+)
 }
 \arguments{
-\item{between_contrasts}{boolean: Whether to plot overlaps between contrasts (TRUE) or between tissues (FALSE)}
+\item{between_coefficients}{boolean: Whether to plot overlaps between coefficients (TRUE) or between tissues (FALSE)}
 
 \item{type}{character vector: Either "DE" or "GO" depending on the type of entity}
 
-\item{tissue_str}{character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp, NAc}
+\item{tissues}{character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp, NAc}
 
-\item{cond_str}{character vector: Comma-separated list of contrasts as present in the data directory, i.e. Group2,Group3}
+\item{coefficients}{character vector: Comma-separated list of coefficients as present in the data directory, i.e. Group2,Group3}
 }
 \value{
 A Venn Diagram of the ggplot-kind.
 }
 \description{
-Draws a Venn diagram of significant entities (genes or GO-terms) between tissues across contrasts,
-or between contrasts across tissues
+Draws a Venn diagram of significant entities (genes or GO-terms) between tissues across coefficients,
+or between coefficients across tissues
 }
