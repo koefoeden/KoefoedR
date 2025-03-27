@@ -48,7 +48,6 @@ write_tsv_and_excel <- function(x, path, ...) {
 }
 
 
-# Helper --------------------------------------------------------------------
 
 #'  Switch names and values for named vector
 #'
@@ -62,4 +61,45 @@ switch_names_and_values_for_vec <- function(named_vector) {
   values <- unname(named_vector)
   
   return(set_names(my_names, values))
+}
+
+
+gzip_and_index_w_sort <- function(frag_path) {
+  # 3) Look into parsort from parallel module.
+  avail_cores <- Sys.getenv('SLURM_CPUS_PER_TASK')
+  out_file <- paste0(frag_path, ".sorted.gz")
+  
+  "export LC_ALL=C; sort --parallel={avail_cores} -k 1,1 -k2,2n {frag_path} | /maps/projects/scop/apps/bgzip -@ {avail_cores} > {out_file}" %>% str_glue() %>%  system()
+  "/maps/projects/scop/apps/tabix -f -p bed {out_file}" %>% str_glue() %>% system()
+  
+  return(out_file)
+}
+
+
+prefer_std_funcs <- function() {
+  conflicts_prefer(dplyr::filter,
+                   base::intersect,
+                   purrr::set_names,
+                   dplyr::select)
+}
+
+# Git binds
+get_current_commit <- function() {
+  
+  system('echo "$(git rev-list --count HEAD)-$(git rev-parse --short HEAD)"', intern = TRUE)
+}
+
+gcp <- function(message) {
+  
+  system(str_glue("git commit -a -m '{message}'"))
+  system("git push")
+}
+
+gp <- function() {
+  
+  system(str_glue("git pull"))
+}
+gs <- function() {
+  
+  system(str_glue("git status"))
 }
