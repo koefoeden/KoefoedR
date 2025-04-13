@@ -1,4 +1,3 @@
-# Tidyverse imports -----------------------------------------------------------------
 #' @import ggplot2
 #' @import dplyr
 #' @import edgeR
@@ -83,7 +82,7 @@ prefer_std_funcs <- function() {
                    dplyr::select)
 }
 
-# Git binds
+# Git binds ----------------------
 get_current_commit <- function() {
   
   system('echo "$(git rev-list --count HEAD)-$(git rev-parse --short HEAD)"', intern = TRUE)
@@ -102,4 +101,9 @@ gp <- function() {
 gs <- function() {
   
   system(str_glue("git status"))
+}
+
+# File system ------------------
+clear_scratch_Rtmp_drives <- function() {
+  system("rm -r /scratch/Rtmp*")
 }

@@ -259,3 +259,18 @@ generate_10x_batches <- function(batch_names = c("D","E","F","G",
   to_seq_per_batch[["L"]] <- choose_seq_from_df
   to_seq_per_batch
 }
+
+get_seurat_object_sizes <- function(SO) {
+  slot_names <- slotNames(SO) %>% purrr::set_names()
+  assay_names <- SO@assays %>% names() %>% purrr::set_names()
+  
+  # General
+  purrr::map(slot_names, ~object.size(slot(SO,.x)) %>% format(units='auto')) %>% unlist() %>% print()
+  
+  # Assays
+  purrr::map(assay_names, ~object.size(SO[[.x]]) %>% format(units='auto')) %>% unlist() %>% print()
+  
+  # ATAC
+  purrr::map(slotNames(SO[["ATAC"]]) %>% purrr::set_names(), ~slot(SO[["ATAC"]], .x) %>% object.size() %>% format(units="auto")) %>% unlist() %>% print()
+  
+}
