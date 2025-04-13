@@ -1,6 +1,6 @@
 Package: KoefoedR
 Title: A bunch of nice convenience functions
-Version: 0.1.0
+Version: 0.1.0.9000
 Authors@R: 
     person("Thomas", "Koefoed", , "thomas.koefoed@sund.ku.dk", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
