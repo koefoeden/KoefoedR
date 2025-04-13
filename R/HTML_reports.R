@@ -1,15 +1,3 @@
-# Tidyverse imports
-#' @import ggplot2
-#' @import dplyr
-#' @import edgeR
-#' @import purrr
-#' @import readr
-#' @import tidyr
-#' @import tibble
-#' @import stringr
-#' @import forcats
-NULL
-
 #' Auxillary function that prints a DT::datatable object correctly
 #' both when working interactively and in reports
 #'

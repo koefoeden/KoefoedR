@@ -1308,7 +1308,7 @@ local({
     result <- eval(json, envir = renv_json_read_envir())
   
     # fix up strings if necessary -- do so only with reversible patterns
-    patterns <- Filter(function(pattern) pattern[[3L]], patterns)
+    patterns <-dplyr::filter(function(pattern) pattern[[3L]], patterns)
     renv_json_read_remap(result, patterns)
   
   }

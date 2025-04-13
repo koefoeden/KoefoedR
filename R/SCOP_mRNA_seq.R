@@ -1,21 +1,8 @@
-# Tidyverse imports -----------------------------------------------------------------
-#' @import ggplot2
-#' @import dplyr
-#' @import edgeR
-#' @import purrr
-#' @import readr
-#' @import tidyr
-#' @import tibble
-#' @import stringr
-#' @import forcats
-NULL
-
-
 # Data processing -------------------------------------------------------------------
 #' Generate external gene names for ENSEMBL-IDS.
 #'
 #' @param dataset Choose human or mouse biomart ensembl dataset 
-#' @param gene_counts_raw Raw salmon output with ensemble IDS as rownames.
+#' @param gene_counts_raw_path Raw salmon output with ensemble IDS as rownames.
 #'
 #' @return The gene info list
 #' @export
@@ -36,7 +23,7 @@ generate_gene_info_list <- function(dataset="hsapiens_gene_ensembl", gene_counts
 #' Get a named vector that can be used to translate ENSEMBL-ids into gene synmbols
 #'
 #' @param dataset The biomart dataset 
-#' @param gene_counts_raw the gne counts raw object to extract ENSEMBL_IDS from
+#' @param gene_counts_raw_path the gne counts raw object to extract ENSEMBL_IDS from
 #'
 #' @return A named vector that can be used for translation
 #' @export
@@ -57,7 +44,7 @@ get_translate_vec <- function(dataset="hsapiens_gene_ensembl", gene_counts_raw_p
 #' @export
 
 
-get_MD_data_for_all_samples_updated <- function(object) {
+get_MD_data_for_all_samples <- function(object) {
   sample_indices_w_names <- colnames(object) %>%
     purrr::set_names()
   
@@ -79,8 +66,8 @@ n_sig_genes_pr_contrast <- function(results_DF_list) {
   
   purrr::map(results_DF_list,
              ~.x %>%
-               filter(if_any(any_of(c("FDR", "adj.P.Val")),
-                             ~.x < 0.05)) %>%
+               dplyr::filter(if_any(any_of(c("FDR", "adj.P.Val")),
+                                    ~.x < 0.05)) %>%
                nrow()) %>%
     unlist()
 }
@@ -98,7 +85,7 @@ get_sig_entities_from_df <- function(df, genes_type="NCBI", type="DE") {
   message("This function is deprecated. Please use the with_direction instead.")
   
   sig_entities <- df %>%
-    filter(FDR<0.05) %>%
+    dplyr::filter(FDR<0.05) %>%
     select(any_of(c(case_when(genes_type=="ENSEMBL" & type == "DE"  ~ c("ENSEMBL_ID"),
                               genes_type=="NCBI"& type == "DE" ~ c("Name"),
                               TRUE ~ "TERM")))) %>%
@@ -115,7 +102,7 @@ get_sig_entities_from_df <- function(df, genes_type="NCBI", type="DE") {
 #' @export
 get_sig_entities_from_df_w_direction <- function (df, genes_type = "NCBI", type = "DE") {
   sig_entities <- df %>% 
-    filter(FDR < 0.05) %>% 
+    dplyr::filter(FDR < 0.05) %>% 
     {if (type!="GO") {
       mutate(., Direction=case_when(logFC<0 ~ "Down",
                                     logFC>0 ~ "Up"),
@@ -144,14 +131,14 @@ get_sig_entities_from_path <- function(path, type, genes_type) {
   
 }
 
-#' Gets a nested list of significant entities (genes or GO-terms) between coefficients across tissues.
-#' Assumes there is a data dir with each tissue described in its name, with GO and DE-tables in them
-#' with corresponding names.
-#' @param type Either "DE" or "GO" depending on the type of entity
-#' @param tissues Character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp,NAc
-#' @return A nested list, where the upper levels corresponds to supplied  coefficients,
-#' and the lower levels each contain a vector of significant gene names or GO-terms for the tissue
-#' @export
+# Gets a nested list of significant entities (genes or GO-terms) between coefficients across tissues.
+# Assumes there is a data dir with each tissue described in its name, with GO and DE-tables in them
+# with corresponding names.
+# @param type Either "DE" or "GO" depending on the type of entity
+# @param tissues Character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp,NAc
+# @return A nested list, where the upper levels corresponds to supplied  coefficients,
+# and the lower levels each contain a vector of significant gene names or GO-terms for the tissue
+# @export
 get_sig_entities_between_coefficients_across_tissues <- function(data_dir, type, tissues, coefficients, genes_type, verbose=FALSE) {
   
   # Get regex tissue pattern
@@ -204,16 +191,16 @@ get_sig_entities_between_coefficients_across_tissues <- function(data_dir, type,
   )
   return(tables_per_tissue_list)
 }
-#' Gets a nested list of significant entities (genes or GO-terms) between tissues across coefficients.
-#' Assumes there is a data dir with each tissue described in its name, with GO and DE-tables in them
-#' with corresponding names.
-#' @param type Either "DE" or "GO" depending on the type of entity
-#' @param coefficients Character vector: Comma-separated list of coefficients as present in the data directory, i.e. Group2,Group3
-#' @param tissues Character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp,NAc
-#' @param genes_type Either ENSEMBL or NCBI
-#' @return A nested list, where the upper levels corresponds to supplied tissues,
-#' and the lower levels each contain a vector of significant gene names or GO-terms for the given condition
-#' @export
+# Gets a nested list of significant entities (genes or GO-terms) between tissues across coefficients.
+# Assumes there is a data dir with each tissue described in its name, with GO and DE-tables in them
+# with corresponding names.
+# @param type Either "DE" or "GO" depending on the type of entity
+# @param coefficients Character vector: Comma-separated list of coefficients as present in the data directory, i.e. Group2,Group3
+# @param tissues Character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp,NAc
+# @param genes_type Either ENSEMBL or NCBI
+# @return A nested list, where the upper levels corresponds to supplied tissues,
+# and the lower levels each contain a vector of significant gene names or GO-terms for the given condition
+# @export
 get_sig_entities_between_tissues_across_coefficients <- function(data_dir, type, coefficients, tissues, genes_type) {
   
   tissue_pattern <- tissues %>%
@@ -245,12 +232,10 @@ get_sig_entities_between_tissues_across_coefficients <- function(data_dir, type,
 
 #' Function to get the intersection values correpsodning to a UpsetR-plot
 #'
-#' @param The binary membership df, can be geneated from named list via fromList()
+#' @param x The binary membership df, can be geneated from named list via fromList()
 #' @param ... The unique combination of intersections to get the result for
 #' @export
 get_intersect_members <- function (x, ...){
-  require(dplyr)
-  require(tibble)
   x <- x[,sapply(x, is.numeric)][,0<=colMeans(x[,sapply(x, is.numeric)],na.rm=T) & colMeans(x[,sapply(x, is.numeric)],na.rm=T)<=1]
   n <- names(x)
   x %>% rownames_to_column() -> x
@@ -261,12 +246,12 @@ get_intersect_members <- function (x, ...){
   i=2
   for (item in n) {
     if (item %in% a){
-      if (class(x[[item]])=='integer'){
+      if (inherits(item, 'integer')){
         ar[[i]] <- paste(item, '>= 1')
         i <- i + 1
       }
     } else {
-      if (class(x[[item]])=='integer'){
+      if (inherits(item, 'integer')){
         ar[[i]] <- paste(item, '== 0')
         i <- i + 1
       }
@@ -276,8 +261,7 @@ get_intersect_members <- function (x, ...){
   return(x)
 }
 
-#' Small re-write of the UpsetR::fromList function.
-#' @export
+# Small re-write of the UpsetR::fromList function.
 fromList <- function (input) {
   # Same as original fromList()...
   elements <- unique(unlist(input))
@@ -325,7 +309,7 @@ overlapGroups <- function (listInput, sort = TRUE) {
 #' Get specific intersection
 #'
 #' @param named_list A named list of entities
-#' @param extract_vector A list of extrcation vectors, i.e. a list of named boolean vectors,
+#' @param extract_vectors A list of extrcation vectors, i.e. a list of named boolean vectors,
 #' where the names correspond to the given set, and the boolean whether it should be in that set or not
 #' @export
 extract_specific_intersection <- function(named_list, extract_vectors) {
@@ -350,16 +334,16 @@ extract_specific_intersection <- function(named_list, extract_vectors) {
 
 # Plots -------------------------------------------------------------------
 
-#' Draws a Venn diagram of significant entities (genes or GO-terms) between tissues across coefficients,
-#' or between coefficients across tissues
-#'
-#' @param between_coefficients boolean: Whether to plot overlaps between coefficients (TRUE) or between tissues (FALSE)
-#' @param type character vector: Either "DE" or "GO" depending on the type of entity
-#' @param coefficients character vector: Comma-separated list of coefficients as present in the data directory, i.e. Group2,Group3
-#' @param tissues character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp, NAc
-#'
-#' @return A Venn Diagram of the ggplot-kind.
-#' @export
+# Draws a Venn diagram of significant entities (genes or GO-terms) between tissues across coefficients,
+# or between coefficients across tissues
+#
+# @param between_coefficients boolean: Whether to plot overlaps between coefficients (TRUE) or between tissues (FALSE)
+# @param type character vector: Either "DE" or "GO" depending on the type of entity
+# @param coefficients character vector: Comma-separated list of coefficients as present in the data directory, i.e. Group2,Group3
+# @param tissues character vector: Comma-seperated list of tissues as present in the project root, i.e. Hyp, NAc
+#
+# @return A Venn Diagram of the ggplot-kind.
+# @export
 make_venn <- function(between_coefficients, type, tissues, coefficients, genes_type, data_dir) {
   
   entity_type <- case_when(type=="DE"~"genes",
@@ -395,32 +379,31 @@ make_venn <- function(between_coefficients, type, tissues, coefficients, genes_t
 }
 
 
-# **** CHANGED: Added documentation & export, and IS NOW INTERACTIVE  ****
-#' Make a volcano plot using ggplot
-#'
-#' @param df gene results from EdgeR or voom
-#' @param genes character vector, "all" for plotting all genes,
-#' otherwise only plot vector of genes
-#' @param only_sig Whether or not only to print FDR significant genes
-#' @param interactive_plot Whether or not to print a plotly interactive plot
-#' @return The ggplot object
-#' @export
-ggplot_volcano_updated <- function(df,
-                                   plot_genes="all",
-                                   highlight_genes=c("interesting_gene_name_1", "interesting_gene_name_2"),
-                                   only_FDR_sig = FALSE,
-                                   only_nom_sig = FALSE,
-                                   interactive_plot=TRUE,
-                                   title="") {
+# Make a volcano plot using ggplot
+#
+# @param df gene results from EdgeR or voom
+# @param genes character vector, "all" for plotting all genes,
+# otherwise only plot vector of genes
+# @param only_sig Whether or not only to print FDR significant genes
+# @param interactive_plot Whether or not to print a plotly interactive plot
+# @return The ggplot object
+# @export
+ggplot_volcano <- function(df,
+                           plot_genes="all",
+                           highlight_genes=c("interesting_gene_name_1", "interesting_gene_name_2"),
+                           only_FDR_sig = FALSE,
+                           only_nom_sig = FALSE,
+                           interactive_plot=TRUE,
+                           title="") {
   if(!identical(plot_genes,"all")) {
-    df <- df %>% filter(Name %in% plot_genes)
+    df <- df %>%dplyr::filter(Name %in% plot_genes)
   }
   if (only_nom_sig) {
-    df <- df %>% filter(if_any(any_of(c("PValue", "P.Value")), ~.x<0.05))
+    df <- df %>%dplyr::filter(if_any(any_of(c("PValue", "P.Value")), ~.x<0.05))
   }
   
   if (only_FDR_sig) {
-    df <- df %>% filter(if_any(any_of(c("FDR","adj.P.Val")), ~.x<0.05))
+    df <- df %>%dplyr::filter(if_any(any_of(c("FDR","adj.P.Val")), ~.x<0.05))
   }
   
   allLogFc <- df %>% pull("logFC")
@@ -485,7 +468,6 @@ ggplot_volcano_updated <- function(df,
   return(plot)
 }
 
-# *** CORRECTED: Can now take multiple color cols...***
 #' Plot samples in two-dimensional space using MDS
 #'
 #' @param y The DGE list object
@@ -518,13 +500,12 @@ ggplot_mds_repel <- function (y, dims, color_by) {
                  ylab(str_glue("{axis_labels}. {dims[2]} ({var_explained_per_dim[2]} % var. explained)")) +
                  ggtitle(str_glue("MDS-plot colored by {.x}. Dimensions: {dims[1]} & {dims[2]}")))
   
- 
-   interactive_plots <- map(plots, ~plotly::ggplotly(.x, tooltip = c("text", "label", "colour","x","y")))
+  
+  interactive_plots <- map(plots, ~plotly::ggplotly(.x, tooltip = c("text", "label", "colour","x","y")))
   
   return(interactive_plots)
 }
 
-# *** ADDED: Now with added cols option ****
 #' Plot MD-figures for all samples in DGElist.
 #'
 #' @param object The DGElist object with transcript/gene counts and sample information
@@ -533,8 +514,8 @@ ggplot_mds_repel <- function (y, dims, color_by) {
 #' @param ncol Number of columns in the combined plot as integer vector
 #' @return A facetted ggplot
 #' @export
-ggplot_MD_updated <-function(object, samples="all", ncol=3) {
-  MD_data <- get_MD_data_for_all_samples_updated(object)
+ggplot_MD <-function(object, samples="all", ncol=3) {
+  MD_data <- get_MD_data_for_all_samples(object)
   
   if (!identical(samples, "all")) {
     MD_data <- MD_data %>%
@@ -551,21 +532,19 @@ ggplot_MD_updated <-function(object, samples="all", ncol=3) {
 }
 
 # Tables ------------------------------------------------------------------
-# *** CHANGED: NOW EXPECTS BOTH GENE NAME AND ENSEMBL_ID, AND PASSES FURTHER ARGUMENTS TO DT***
 #' Return a nicely formatted DT::datatable object of the DE results
 #'
 #' @param df The dataframe with the DE results
-#' @param type Whether the results is edgeR or voom
+#' @param ... extra arguments passed to DT::datatable()
 #'
 #' @return A DT::datatable
 #' @export
-get_DE_datatable_updated <- function(df, ...) {
+get_DE_datatable <- function(df, ...) {
   my_datatable <- df %>%
     select(any_of(c("Name", "ENSEMBL_ID", "description", "logFC", "PValue","FDR")))  %>%
     mutate(across(any_of(c("logFC", "PValue","FDR")),
                   ~signif(.x,2))) %>%
     DT::datatable(extensions = 'Buttons',
-                  # filter="top",
                   rownames = FALSE,
                   options = list(dom = 'Bfrtip',
                                  buttons = c('copy', 'csv', 'excel', 'colvis'),
@@ -577,8 +556,6 @@ get_DE_datatable_updated <- function(df, ...) {
   return(my_datatable)
 }
 
-#' *** CANGED: NOW PASSES FURTHER ARGUMENTS TO DATATABLE, AND
-#' USES SET PIXEL HEIGHT TO AVOID PROBLEMS IN LOOPS ****
 #' Return a nicely formatted DT::datatable of the GO-results
 #'
 #' @param df The GO-results
@@ -586,11 +563,7 @@ get_DE_datatable_updated <- function(df, ...) {
 #'
 #' @return A DT::datatable
 #' @export
-#'
-#' @examples
-#' 
-#' get_GO_datatable()
-get_GO_datatable_updated <- function(df, ...) {
+get_GO_datatable <- function(df, ...) {
   df %>%
     transmute(ID,
               Direction=as.factor(Direction),
@@ -599,7 +572,6 @@ get_GO_datatable_updated <- function(df, ...) {
               PValue=signif(PValue,2),
               FDR=signif(FDR, 2)) %>%
     DT::datatable(#extensions = 'Buttons',
-      # filter="top",
       rownames = FALSE,
       options = list(dom = 'Bfrtip',
                      buttons = c('copy', 'csv', 'excel', 'colvis'),
@@ -612,15 +584,15 @@ get_GO_datatable_updated <- function(df, ...) {
 
 # Render functions --------------------------------------------------------
 
-#' Render a single tissue
-#' @param markdown_path The absolute path to the markdown fle
-#' @param tissue Character vector of length 1, indicating the tissue to keep,
-#' as present in the metadata sheet for the project
-#' @param exclude Character vector of length 1, indicating the Sample IDS to
-#' remove seperated by commas, as present in the metadata sheet for the project
-#' @return Returns nothing, but creates the corresponding .html files with descriptive names
-#' @export
-render_markdown_file_single_tissue_updated <- function (markdown_path, tissue, exclude, suffix=""){
+# Render a single tissue
+# @param markdown_path The absolute path to the markdown fle
+# @param tissue Character vector of length 1, indicating the tissue to keep,
+# as present in the metadata sheet for the project
+# @param exclude Character vector of length 1, indicating the Sample IDS to
+# remove seperated by commas, as present in the metadata sheet for the project
+# @return Returns nothing, but creates the corresponding .html files with descriptive names
+# @export
+render_markdown_file_single_tissue <- function (markdown_path, tissue, exclude, suffix=""){
   
   script_name <- markdown_path %>%
     basename() %>%
@@ -641,11 +613,11 @@ render_markdown_file_single_tissue_updated <- function (markdown_path, tissue, e
                     envir = parent.frame())
 }
 
-render_tissues_updated <- function (markdown_path, tissue_exclusion_vec, suffix="")
+render_tissues <- function (markdown_path, tissue_exclusion_vec, suffix="")
 {
   for (i in seq_along(tissue_exclusion_vec)) {
-    render_markdown_file_single_tissue_updated(markdown_path, tissue = names(tissue_exclusion_vec[i]),
-                                               exclude = tissue_exclusion_vec[i], suffix)
+    render_markdown_file_single_tissue(markdown_path, tissue = names(tissue_exclusion_vec[i]),
+                                       exclude = tissue_exclusion_vec[i], suffix)
   }
 }
 
@@ -653,13 +625,13 @@ render_tissues_updated <- function (markdown_path, tissue_exclusion_vec, suffix=
 render_QCs <- function(markdown_path = "QC.Rmd",
                        tissue_exclusion_vec = c("fat"="none","muscle"="none"),
                        suffix="_BIGTT_SI_in_high_WH") {
-  render_tissues_updated(markdown_path, tissue_exclusion_vec, suffix)
+  render_tissues(markdown_path, tissue_exclusion_vec, suffix)
 }
 
 render_analyses <- function(markdown_path = "analysis.Rmd",
                             tissue_exclusion_vec = c("fat"="none","muscle"="none"),
                             suffix="_BIGTT_SI_in_high_WH") {
-  render_tissues_updated(markdown_path, tissue_exclusion_vec, suffix)
+  render_tissues(markdown_path, tissue_exclusion_vec, suffix)
 }
 
 render_both <- function(){

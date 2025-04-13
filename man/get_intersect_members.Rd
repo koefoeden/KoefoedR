@@ -7,9 +7,9 @@
 get_intersect_members(x, ...)
 }
 \arguments{
-\item{...}{The unique combination of intersections to get the result for}
+\item{x}{The binary membership df, can be geneated from named list via fromList()}
 
-\item{The}{binary membership df, can be geneated from named list via fromList()}
+\item{...}{The unique combination of intersections to get the result for}
 }
 \description{
 Function to get the intersection values correpsodning to a UpsetR-plot

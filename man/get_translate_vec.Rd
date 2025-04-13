@@ -9,7 +9,7 @@ get_translate_vec(dataset = "hsapiens_gene_ensembl", gene_counts_raw_path)
 \arguments{
 \item{dataset}{The biomart dataset}
 
-\item{gene_counts_raw}{the gne counts raw object to extract ENSEMBL_IDS from}
+\item{gene_counts_raw_path}{the gne counts raw object to extract ENSEMBL_IDS from}
 }
 \value{
 A named vector that can be used for translation

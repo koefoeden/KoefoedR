@@ -1,16 +1,3 @@
-# Tidyverse imports -----------------------------------------------------------------
-#' @import ggplot2
-#' @import dplyr
-#' @import edgeR
-#' @import purrr
-#' @import readr
-#' @import tidyr
-#' @import tibble
-#' @import stringr
-#' @import forcats
-NULL
-
-
 # Experimental planning (TENX batching and sequencing) -------------------
 #' Expects a tibble of libraries to seq with following columns: ATAC/GEX_extra_mil reads, TENX_reaction_ID, ATAC/GEX_index
 #'
@@ -152,8 +139,8 @@ assign_reactions_to_flow_cells_flow_cell_centric <- function(type, flow_cell_cou
   return(stop("failed after many tries"))
 }
 
-#' Convenience function for demultiplexing by genotype that generates needed
-#' .tsv files of each sample in each 10 reaction specified on the larger table.
+# Convenience function for demultiplexing by genotype that generates needed
+# .tsv files of each sample in each 10 reaction specified on the larger table.
 get_and_write_sample_tsvs_for_multiplexd_10x_reactions <- function(chip_samples_path,
                                                                    flinc_translation_excel_sheet,
                                                                    output_dir="samples", remove_NA=T){

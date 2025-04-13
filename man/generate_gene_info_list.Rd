@@ -12,7 +12,7 @@ generate_gene_info_list(
 \arguments{
 \item{dataset}{Choose human or mouse biomart ensembl dataset}
 
-\item{gene_counts_raw}{Raw salmon output with ensemble IDS as rownames.}
+\item{gene_counts_raw_path}{Raw salmon output with ensemble IDS as rownames.}
 }
 \value{
 The gene info list

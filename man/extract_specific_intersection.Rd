@@ -9,7 +9,7 @@ extract_specific_intersection(named_list, extract_vectors)
 \arguments{
 \item{named_list}{A named list of entities}
 
-\item{extract_vector}{A list of extrcation vectors, i.e. a list of named boolean vectors,
+\item{extract_vectors}{A list of extrcation vectors, i.e. a list of named boolean vectors,
 where the names correspond to the given set, and the boolean whether it should be in that set or not}
 }
 \description{

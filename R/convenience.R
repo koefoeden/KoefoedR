@@ -1,14 +1,3 @@
-#' @import ggplot2
-#' @import dplyr
-#' @import edgeR
-#' @import purrr
-#' @import readr
-#' @import tidyr
-#' @import tibble
-#' @import stringr
-#' @import forcats
-NULL
-
 #' Scaling function that does not return weird matrix
 #' @param vec Vector to scale
 #' @return Scaled vector
@@ -34,13 +23,13 @@ replace_na_with_INT <- function(vec) {
   return(vec)
 }
 
-#' Write TSV and excel file
-#'
-#' @param x Object to write to a TSV and excel file
-#' @param path Path of the resulting files
-#'
-#' @return Nothing.
-#' @export
+# Write TSV and excel file
+#
+# @param x Object to write to a TSV and excel file
+# @param path Path of the resulting files
+#
+# @return Nothing.
+# @export
 write_tsv_and_excel <- function(x, path, ...) {
   write_tsv(x=x, file=paste0(path,".tsv"))
   writexl::write_xlsx(x = x, path = paste0(path,".xlsx"))
@@ -76,7 +65,7 @@ gzip_and_index_w_sort <- function(frag_path) {
 
 
 prefer_std_funcs <- function() {
-  conflicts_prefer(dplyr::filter,
+  conflicted::conflicts_prefer(dplyr::filter,
                    base::intersect,
                    purrr::set_names,
                    dplyr::select)
