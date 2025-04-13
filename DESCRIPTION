@@ -5,13 +5,22 @@ Authors@R:
     person("Thomas", "Koefoed", , "thomas.koefoed@sund.ku.dk", role = c("aut", "cre"),
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: A bunch of nice convenience functions
-License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
-    license
+License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.2
+RoxygenNote: 7.3.2
 URL: https://github.com/koefoeden/KoefoedR
 BugReports: https://github.com/koefoeden/KoefoedR/issues
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
+Imports: 
+    dplyr,
+    edgeR,
+    forcats,
+    ggplot2,
+    purrr,
+    readr,
+    stringr,
+    tibble,
+    tidyr

@@ -247,8 +247,6 @@ get_sig_entities_between_tissues_across_coefficients <- function(data_dir, type,
 #'
 #' @param The binary membership df, can be geneated from named list via fromList()
 #' @param ... The unique combination of intersections to get the result for
-#'
-#' @return
 #' @export
 get_intersect_members <- function (x, ...){
   require(dplyr)
@@ -279,10 +277,6 @@ get_intersect_members <- function (x, ...){
 }
 
 #' Small re-write of the UpsetR::fromList function.
-#'
-#' @param input
-#'
-#' @return
 #' @export
 fromList <- function (input) {
   # Same as original fromList()...
@@ -333,7 +327,6 @@ overlapGroups <- function (listInput, sort = TRUE) {
 #' @param named_list A named list of entities
 #' @param extract_vector A list of extrcation vectors, i.e. a list of named boolean vectors,
 #' where the names correspond to the given set, and the boolean whether it should be in that set or not
-#' @return
 #' @export
 extract_specific_intersection <- function(named_list, extract_vectors) {
   

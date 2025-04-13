@@ -6,9 +6,6 @@
 \usage{
 fromList(input)
 }
-\arguments{
-\item{input}{}
-}
 \description{
 Small re-write of the UpsetR::fromList function.
 }
